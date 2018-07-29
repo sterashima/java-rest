@@ -21,12 +21,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private RestAuthenticationEntryPoint authenticationEntryPoint;
   
     @Autowired
-    private RestSavedRequestAwareAuthenticationSuccessHandler authenticationSuccessHandler;
-  
-    @Bean
-    public RestSavedRequestAwareAuthenticationSuccessHandler authenticationSuccessHandler() {
-        return new RestSavedRequestAwareAuthenticationSuccessHandler();
-    }
+    private RestAuthSuccessResponseHandler authenticationSuccessHandler;
 
     @Autowired
     private SimpleUrlAuthenticationFailureHandler authenticationFailureHandler;
