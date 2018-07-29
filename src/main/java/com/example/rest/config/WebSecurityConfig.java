@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
@@ -18,22 +19,11 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-    @Autowired
-    private RestAuthenticationEntryPoint authenticationEntryPoint;
-  
-    @Autowired
-    private RestAuthSuccessResponseHandler authenticationSuccessHandler;
-
-    @Autowired
-    private SimpleUrlAuthenticationFailureHandler authenticationFailureHandler;
 
     @Bean
     public SimpleUrlAuthenticationFailureHandler authenticationFailureHandler() {
         return new SimpleUrlAuthenticationFailureHandler();
     }
-  
-    @Autowired
-    private HttpStatusReturningLogoutSuccessHandler logoutSuccessHandler;
 
     @Bean
     public HttpStatusReturningLogoutSuccessHandler logoutSuccessHandler() {
@@ -52,28 +42,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         return new BCryptPasswordEncoder();
     }
         
-
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-                    .antMatchers(HttpMethod.POST, "/users").permitAll()
+                    .antMatchers(HttpMethod.POST, "/users", "/login").permitAll()
                     .anyRequest().authenticated()
-                .and()
-                    .exceptionHandling()
-                    .authenticationEntryPoint(authenticationEntryPoint)
-                .and()
-                    .formLogin()
-                        .loginPage("/login")
-                        .successHandler(authenticationSuccessHandler)
-                        .failureHandler(authenticationFailureHandler)
-                        .permitAll()
-                .and()
-                    .logout()
-                        .logoutSuccessHandler(logoutSuccessHandler)
-                        .permitAll()
-                .and()
-                    .csrf()
-                    .disable()
+                .and().logout()
+                .and().csrf().disable()
+                .addFilter(new JWTAuthenticationFilter(authenticationManager()))
+                .addFilter(new JWTAuthorizationFilter(authenticationManager()))
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 ;
     }
 
